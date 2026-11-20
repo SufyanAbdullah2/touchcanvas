@@ -5,6 +5,7 @@ import { renderStrokes } from "../drawing/render";
 import type { Point, Stroke } from "../drawing/types";
 
 type PadSocket = ReturnType<typeof io>;
+const backendUrl = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.replace(/\/$/, "");
 
 export default function MobilePad() {
   const token = new URLSearchParams(window.location.search).get("token") ?? "";
@@ -57,7 +58,7 @@ export default function MobilePad() {
       setError("This drawing-pad link is missing its pairing code. Scan the current desktop QR code again.");
       return;
     }
-    const socket = io({ transports: ["websocket", "polling"] });
+    const socket = io(backendUrl || undefined, { transports: ["websocket", "polling"] });
     socketRef.current = socket;
     socket.on("connect", () => {
       socket.emit("pad:join", { token });

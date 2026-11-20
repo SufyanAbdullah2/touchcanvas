@@ -80,7 +80,8 @@ function readWorkspace(): SavedWorkspace {
 }
 
 function App() {
-  return window.location.pathname === "/pad" ? <MobilePad /> : <Studio />;
+  const isPad = /(?:^|\/)pad\/?$/.test(window.location.pathname);
+  return isPad ? <MobilePad /> : <Studio />;
 }
 
 function Studio() {
@@ -126,7 +127,8 @@ function Studio() {
   }, [history, tools]);
 
   useEffect(() => {
-    const socket = io({ transports: ["websocket", "polling"] });
+    const backendUrl = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.replace(/\/$/, "");
+    const socket = io(backendUrl || undefined, { transports: ["websocket", "polling"] });
     socketRef.current = socket;
     const scheduleRemoteDraft = () => {
       if (remoteFlushRef.current !== null) return;
@@ -236,7 +238,8 @@ function Studio() {
 
   const createPairing = async (open: boolean) => {
     try {
-      const response = await fetch("/api/pairings", {
+      const backendUrl = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+      const response = await fetch(`${backendUrl}/api/pairings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ port: Number(window.location.port) || (window.location.protocol === "https:" ? 443 : 80) }),
