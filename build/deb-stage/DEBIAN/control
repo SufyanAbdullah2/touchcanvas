@@ -4,7 +4,7 @@ Section: graphics
 Priority: optional
 Architecture: amd64
 Depends: libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0, libgbm1, libasound2 | libasound2t64
-Installed-Size: 365674
+Installed-Size: 365678
 Maintainer: Sufyan Abdullah <touchcanvas@example.com>
 Homepage: https://example.com/touchcanvas
 Description: Cross-device digital sketching and wireframing

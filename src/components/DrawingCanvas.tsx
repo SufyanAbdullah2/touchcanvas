@@ -39,6 +39,29 @@ export default function DrawingCanvas({
   viewportRef.current = viewport;
   const onViewportChangeRef = useRef(onViewportChange);
   onViewportChangeRef.current = onViewportChange;
+  const spaceHeldRef = useRef(false);
+
+  useEffect(() => {
+    const isTyping = (target: EventTarget | null) =>
+      target instanceof HTMLElement && ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(target.tagName);
+    const down = (event: KeyboardEvent) => {
+      if (event.code !== "Space" || isTyping(event.target)) return;
+      spaceHeldRef.current = true;
+      event.preventDefault();
+    };
+    const up = (event: KeyboardEvent) => {
+      if (event.code === "Space") spaceHeldRef.current = false;
+    };
+    const release = () => { spaceHeldRef.current = false; };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    window.addEventListener("blur", release);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", release);
+    };
+  }, []);
 
   const paint = useCallback(() => {
     const canvas = canvasRef.current;
@@ -106,13 +129,19 @@ export default function DrawingCanvas({
     if (!canvas) return;
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      onViewportChangeRef.current(zoomAt(
-        viewportRef.current,
-        Math.exp(-event.deltaY * 0.001),
-        event.clientX - rect.left,
-        event.clientY - rect.top,
-      ));
+      if (event.ctrlKey || event.metaKey) {
+        // Ctrl + wheel, and trackpad pinch (which browsers report as ctrl + wheel), zoom.
+        const rect = canvas.getBoundingClientRect();
+        onViewportChangeRef.current(zoomAt(
+          viewportRef.current,
+          Math.exp(-event.deltaY * 0.01),
+          event.clientX - rect.left,
+          event.clientY - rect.top,
+        ));
+        return;
+      }
+      // Plain scroll (mouse wheel or two-finger trackpad scroll) pans.
+      onViewportChangeRef.current(panBy(viewportRef.current, -event.deltaX, -event.deltaY));
     };
     canvas.addEventListener("wheel", handleWheel, { passive: false });
     return () => canvas.removeEventListener("wheel", handleWheel);
@@ -132,7 +161,7 @@ export default function DrawingCanvas({
       rect.width,
       rect.height,
       viewport,
-      event.pointerType === "pen" ? (event.pressure > 0 ? event.pressure : previousPressure ?? 0.5) : 1,
+      event.pointerType === "pen" ? (event.pressure > 0 ? event.pressure : previousPressure ?? 0.5) : undefined,
     );
   };
 
@@ -141,18 +170,23 @@ export default function DrawingCanvas({
     if (style) setDraft({ points, ...style });
   };
 
+  const touchPoints = () => [...pointersRef.current.values()].filter((point) => point.type === "touch");
+
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault();
+    // Palm rejection: while a pen stroke is in progress, ignore touches completely.
+    const penDrawing = pointerIdRef.current !== null && pointersRef.current.get(pointerIdRef.current)?.type === "pen";
+    if (event.pointerType === "touch" && penDrawing) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     const local = getLocalPoint(event);
     pointersRef.current.set(event.pointerId, { ...local, type: event.pointerType });
-    if (event.pointerType === "touch" && pointersRef.current.size >= 2) {
+    if (event.pointerType === "touch" && touchPoints().length >= 2) {
       activeStrokeRef.current = [];
       activeStyleRef.current = null;
       pointerIdRef.current = null;
       panPointerRef.current = null;
       setDraft(null);
-      const points = [...pointersRef.current.values()].filter((point) => point.type === "touch");
+      const points = touchPoints();
       const first = points[0];
       const second = points[1];
       gestureRef.current = {
@@ -164,7 +198,7 @@ export default function DrawingCanvas({
       return;
     }
     if (pointerIdRef.current !== null) return;
-    if (event.button === 1) {
+    if (event.button === 1 || (event.button === 0 && event.pointerType === "mouse" && spaceHeldRef.current)) {
       panPointerRef.current = { id: event.pointerId, ...local };
       return;
     }
@@ -178,8 +212,8 @@ export default function DrawingCanvas({
     const local = getLocalPoint(event);
     const existing = pointersRef.current.get(event.pointerId);
     if (existing) pointersRef.current.set(event.pointerId, { ...local, type: existing.type });
-    if (gestureRef.current && pointersRef.current.size >= 2) {
-      const points = [...pointersRef.current.values()].filter((point) => point.type === "touch");
+    if (gestureRef.current) {
+      const points = touchPoints();
       if (points.length >= 2) {
         const [first, second] = points;
         const centerX = (first.x + second.x) / 2;
@@ -207,7 +241,7 @@ export default function DrawingCanvas({
   const finishStroke = (event: React.PointerEvent<HTMLCanvasElement>) => {
     pointersRef.current.delete(event.pointerId);
     if (gestureRef.current) {
-      if (pointersRef.current.size < 2) gestureRef.current = null;
+      if (touchPoints().length < 2) gestureRef.current = null;
       return;
     }
     if (panPointerRef.current?.id === event.pointerId) {
@@ -227,7 +261,7 @@ export default function DrawingCanvas({
   const cancelStroke = (event: React.PointerEvent<HTMLCanvasElement>) => {
     pointersRef.current.delete(event.pointerId);
     if (gestureRef.current) {
-      if (pointersRef.current.size < 2) gestureRef.current = null;
+      if (touchPoints().length < 2) gestureRef.current = null;
       return;
     }
     if (panPointerRef.current?.id === event.pointerId) {

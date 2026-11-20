@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
 import { Eraser, RotateCcw, Wifi, WifiOff } from "lucide-react";
+import { connectSocket, getBackendUrl } from "../backend";
 import { renderStrokes } from "../drawing/render";
 import type { Point, Stroke } from "../drawing/types";
 
-type PadSocket = ReturnType<typeof io>;
-const backendUrl = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.trim().replace(/\/$/, "") ?? "";
+type PadSocket = ReturnType<typeof connectSocket>;
 
 export default function MobilePad() {
   const token = new URLSearchParams(window.location.search).get("token") ?? "";
@@ -13,6 +12,7 @@ export default function MobilePad() {
   const pointerRef = useRef<number | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const strokeRef = useRef<Stroke | null>(null);
+  const startedRef = useRef(false);
   const committedRef = useRef<Stroke[]>([]);
   const frameRef = useRef(0);
   const gestureRef = useRef<{ distance: number; x: number; y: number; startedAt: number; moved: number } | null>(null);
@@ -58,11 +58,12 @@ export default function MobilePad() {
       setError("This drawing-pad link is missing its pairing code. Scan the current desktop QR code again.");
       return;
     }
-    if (!backendUrl) {
+    const backendUrl = getBackendUrl();
+    if (backendUrl === null) {
       setError("This public page needs a deployed TouchCanvas pairing server.");
       return;
     }
-    const socket = io(backendUrl, { transports: ["websocket", "polling"] });
+    const socket = connectSocket(backendUrl);
     socketRef.current = socket;
     socket.on("connect", () => {
       socket.emit("pad:join", { token });
@@ -99,25 +100,49 @@ export default function MobilePad() {
     return {
       x: (event.clientX - rect.left) / rect.width,
       y: (event.clientY - rect.top) / rect.height,
-      pressure: event.pointerType === "pen" ? (event.pressure > 0 ? event.pressure : previousPressure ?? 0.5) : 1,
+      pressure: event.pointerType === "pen" ? (event.pressure > 0 ? event.pressure : previousPressure ?? 0.5) : undefined,
     };
   };
 
-  const commitStroke = (id: number | null) => {
+  /** Tell the desktop a stroke has begun (only once the finger has really moved or lifted). */
+  const beginRemoteStroke = (stroke: Stroke, id: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    startedRef.current = true;
+    socketRef.current?.emit("pad:stroke:start", {
+      id: String(id),
+      stroke: { ...stroke, points: [...stroke.points] },
+      aspect: rect.width / Math.max(rect.height, 1),
+    });
+  };
+
+  /** keepTap: a stroke that never moved is kept as a dot (finger lifted) or dropped (a second finger arrived). */
+  const finishStroke = (keepTap: boolean) => {
     const stroke = strokeRef.current;
-    if (!stroke) return;
-    committedRef.current = [...committedRef.current, stroke];
+    const id = pointerRef.current;
+    const started = startedRef.current;
     strokeRef.current = null;
     pointerRef.current = null;
-    if (id !== null) socketRef.current?.emit("pad:stroke:end", { id: String(id) });
+    startedRef.current = false;
+    if (!stroke || id === null) return;
+    if (!started) {
+      if (!keepTap) {
+        scheduleRedraw();
+        return;
+      }
+      beginRemoteStroke(stroke, id);
+      startedRef.current = false;
+    }
+    committedRef.current = [...committedRef.current, stroke];
+    socketRef.current?.emit("pad:stroke:end", { id: String(id) });
     scheduleRedraw();
   };
 
   const undo = () => {
-    if (committedRef.current.length > 0) {
-      committedRef.current = committedRef.current.slice(0, -1);
-      scheduleRedraw();
-    }
+    if (committedRef.current.length === 0) return;
+    committedRef.current = committedRef.current.slice(0, -1);
+    scheduleRedraw();
     socketRef.current?.emit("pad:undo");
   };
 
@@ -127,7 +152,7 @@ export default function MobilePad() {
     const rect = event.currentTarget.getBoundingClientRect();
     pointersRef.current.set(event.pointerId, { x: event.clientX - rect.left, y: event.clientY - rect.top });
     if (pointersRef.current.size >= 2) {
-      commitStroke(pointerRef.current);
+      finishStroke(false);
       const points = [...pointersRef.current.values()];
       const first = points[0];
       const second = points[1];
@@ -148,11 +173,7 @@ export default function MobilePad() {
       tool: eraser ? "eraser" : "pen",
     };
     strokeRef.current = stroke;
-    socketRef.current?.emit("pad:stroke:start", {
-      id: String(event.pointerId),
-      stroke,
-      aspect: rect.width / Math.max(rect.height, 1),
-    });
+    startedRef.current = false;
     scheduleRedraw();
   };
 
@@ -188,11 +209,17 @@ export default function MobilePad() {
     const stroke = strokeRef.current;
     if (!stroke) return;
     stroke.points.push(point);
-    socketRef.current?.emit("pad:stroke:point", { id: String(event.pointerId), point });
+    if (startedRef.current) {
+      socketRef.current?.emit("pad:stroke:point", { id: String(event.pointerId), point });
+    } else {
+      const first = stroke.points[0];
+      const moved = Math.hypot((point.x - first.x) * rect.width, (point.y - first.y) * rect.height);
+      if (moved >= 6) beginRemoteStroke(stroke, event.pointerId);
+    }
     scheduleRedraw();
   };
 
-  const handlePointerUp = (event: React.PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerUp = (event: React.PointerEvent<HTMLCanvasElement>, cancelled = false) => {
     pointersRef.current.delete(event.pointerId);
     if (gestureRef.current) {
       if (pointersRef.current.size < 2) {
@@ -203,13 +230,15 @@ export default function MobilePad() {
       return;
     }
     if (pointerRef.current !== event.pointerId) return;
-    commitStroke(event.pointerId);
+    finishStroke(!cancelled);
   };
 
   const clearPad = () => {
+    if (!window.confirm("Clear the desktop canvas? You can undo this on the desktop.")) return;
     committedRef.current = [];
     strokeRef.current = null;
     pointerRef.current = null;
+    startedRef.current = false;
     redraw();
     socketRef.current?.emit("pad:clear");
   };
@@ -251,7 +280,7 @@ export default function MobilePad() {
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
+          onPointerCancel={(event) => handlePointerUp(event, true)}
         />
         {error && <div className="pad-message" role="status">{error}</div>}
         {!connected && !error && <div className="pad-message" role="status">Connecting to your desktop…</div>}

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useReducer } from "react";
-import { io } from "socket.io-client";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Check,
@@ -16,6 +15,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
+import { connectSocket, getBackendUrl } from "./backend";
 import DrawingCanvas from "./components/DrawingCanvas";
 import MobilePad from "./components/MobilePad";
 import { createSvg, downloadPng, downloadText } from "./drawing/export";
@@ -30,13 +30,6 @@ import type { CanvasBackground, DrawingHistory, DrawingTool, RemoteStroke, Strok
 
 const colors = ["#28334a", "#ed6a5a", "#4b8f8c", "#e7a83e", "#8b74c7", "#222222"];
 const storageKey = "touchcanvas.workspace.v1";
-
-function getBackendUrl(): string {
-  const configured = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.trim();
-  if (configured) return configured.replace(/\/$/, "");
-  if (window.location.hostname.endsWith("github.io") || window.location.hostname.endsWith("pages.dev")) return "";
-  return "";
-}
 
 interface Pairing {
   id: string;
@@ -105,7 +98,7 @@ function Studio() {
   const padFrameRef = useRef<PadFrame | null>(null);
   const remoteFlushRef = useRef<number | null>(null);
   const initialSaveRef = useRef(true);
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const socketRef = useRef<ReturnType<typeof connectSocket> | null>(null);
   const pairingRef = useRef<Pairing | null>(null);
   const paperRef = useRef<HTMLDivElement>(null);
   const sketchFileRef = useRef<HTMLInputElement>(null);
@@ -135,8 +128,8 @@ function Studio() {
 
   useEffect(() => {
     const backendUrl = getBackendUrl();
-    if (!backendUrl) return;
-    const socket = io(backendUrl, { transports: ["websocket", "polling"] });
+    if (backendUrl === null) return;
+    const socket = connectSocket(backendUrl);
     socketRef.current = socket;
     const scheduleRemoteDraft = () => {
       if (remoteFlushRef.current !== null) return;
@@ -247,7 +240,7 @@ function Studio() {
   const createPairing = async (open: boolean) => {
     try {
       const backendUrl = getBackendUrl();
-      if (!backendUrl) throw new Error("This static site needs a deployed TouchCanvas pairing server.");
+      if (backendUrl === null) throw new Error("This static site needs a deployed TouchCanvas pairing server.");
       const response = await fetch(`${backendUrl}/api/pairings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -443,7 +436,7 @@ function Studio() {
             </div>
           </div>
           <div className="canvas-caption">
-            <span><span className="keyboard-key">Ctrl</span> + <span className="keyboard-key">Z</span> to undo · pinch or scroll to zoom</span>
+            <span><span className="keyboard-key">Ctrl</span> + <span className="keyboard-key">Z</span> to undo · Ctrl + scroll or pinch to zoom · scroll or Space + drag to pan</span>
             <span className="canvas-dimensions">Infinite canvas · {history.present.length} strokes</span>
           </div>
         </section>
