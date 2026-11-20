@@ -6,6 +6,12 @@ Public project:
 - [Source repository](https://github.com/SufyanAbdullah2/touchcanvas)
 - [GitHub releases](https://github.com/SufyanAbdullah2/touchcanvas/releases/tag/v0.1.0)
 
+## Deploy the pairing backend
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SufyanAbdullah2/touchcanvas)
+
+After the service is created, set `VITE_TOUCHCANVAS_BACKEND_URL` in the GitHub Pages workflow to the public `https://...onrender.com` backend URL.
+
 TouchCanvas is a responsive sketching and wireframing workspace for browsers and desktop. It supports mouse, touch, and pen input, then lets a phone join the same local Wi-Fi network as a wireless drawing pad.
 
 ## Run in a browser
