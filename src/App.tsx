@@ -31,6 +31,13 @@ import type { CanvasBackground, DrawingHistory, DrawingTool, RemoteStroke, Strok
 const colors = ["#28334a", "#ed6a5a", "#4b8f8c", "#e7a83e", "#8b74c7", "#222222"];
 const storageKey = "touchcanvas.workspace.v1";
 
+function getBackendUrl(): string {
+  const configured = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.trim();
+  if (configured) return configured.replace(/\/$/, "");
+  if (window.location.hostname.endsWith("github.io") || window.location.hostname.endsWith("pages.dev")) return "";
+  return "";
+}
+
 interface Pairing {
   id: string;
   token: string;
@@ -127,8 +134,9 @@ function Studio() {
   }, [history, tools]);
 
   useEffect(() => {
-    const backendUrl = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.replace(/\/$/, "");
-    const socket = io(backendUrl || undefined, { transports: ["websocket", "polling"] });
+    const backendUrl = getBackendUrl();
+    if (!backendUrl) return;
+    const socket = io(backendUrl, { transports: ["websocket", "polling"] });
     socketRef.current = socket;
     const scheduleRemoteDraft = () => {
       if (remoteFlushRef.current !== null) return;
@@ -238,7 +246,8 @@ function Studio() {
 
   const createPairing = async (open: boolean) => {
     try {
-      const backendUrl = (import.meta.env.VITE_TOUCHCANVAS_BACKEND_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+      const backendUrl = getBackendUrl();
+      if (!backendUrl) throw new Error("This static site needs a deployed TouchCanvas pairing server.");
       const response = await fetch(`${backendUrl}/api/pairings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
