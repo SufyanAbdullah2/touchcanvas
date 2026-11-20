@@ -1,0 +1,34 @@
+=== LINUX ===
+
+> touchcanvas@0.1.0 desktop:linux
+> node scripts/desktop.js linux
+
+[36mvite v7.3.8 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 1867 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                          [39m[1m[2m  0.58 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
+[2mdist/[22m[35massets/index-Dd0aWMkF.css           [39m[1m[2m 20.05 kB[22m[1m[22m[2m │ gzip:   5.26 kB[22m
+[2mdist/[22m[36massets/purify.es-DlXLPG5w.js        [39m[1m[2m 29.62 kB[22m[1m[22m[2m │ gzip:  11.48 kB[22m
+[2mdist/[22m[36massets/index.es-LDTdonhr.js         [39m[1m[2m158.96 kB[22m[1m[22m[2m │ gzip:  53.05 kB[22m
+[2mdist/[22m[36massets/html2canvas.esm-DXEQVQnt.js  [39m[1m[2m201.04 kB[22m[1m[22m[2m │ gzip:  47.43 kB[22m
+[2mdist/[22m[36massets/index-B4_YJpsw.js            [39m[1m[2m241.54 kB[22m[1m[22m[2m │ gzip:  78.04 kB[22m
+[2mdist/[22m[36massets/pdf-B4qkj5eH.js              [39m[1m[2m386.50 kB[22m[1m[22m[2m │ gzip: 126.56 kB[22m
+[32m✓ built in 10.89s[39m
+Packaging app for platform linux x64 using electron v45.4.1
+Packaged TouchCanvas for linux: E:\TouchCanvas (or PocketPad) — Cross-Device Digital Sketching & Wireframing Utility\release\TouchCanvas-linux-x64
+LINUX_EXIT=0
+=== DEB ===
+
+> touchcanvas@0.1.0 desktop:deb
+> node scripts/linux-deb.js
+
+Staged control files (Installed-Size ~365674 KB).
+Streaming control/stage tree into WSL...
+Streaming application payload into WSL (this can take a minute)...
+Fixing permissions and building the package...
+dpkg-deb: building package 'touchcanvas' in '/tmp/touchcanvas.deb'.
+Copying touchcanvas_0.1.0_amd64.deb back to Windows...
+DEB_EXIT=0
+=== DONE ===

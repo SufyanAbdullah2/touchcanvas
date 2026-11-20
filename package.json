@@ -1,0 +1,48 @@
+{
+  "name": "touchcanvas",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cross-device digital sketching and wireframing utility",
+  "license": "MIT",
+  "author": "Sufyan Abdullah",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "start": "node server/index.js",
+    "build": "node scripts/build.js",
+    "test": "node node_modules/vitest/vitest.mjs run",
+    "desktop:dev": "node scripts/desktop.js dev",
+    "desktop:win": "node scripts/desktop.js win32",
+    "desktop:linux": "node scripts/desktop.js linux",
+    "desktop:installer": "node scripts/desktop.js installer",
+    "desktop:deb": "node scripts/linux-deb.js",
+    "desktop:icon": "node node_modules/electron/cli.js scripts/make-icon.cjs"
+  },
+  "dependencies": {
+    "express": "^4.22.3",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^0.468.0",
+    "qrcode.react": "^4.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "socket.io": "^4.8.4",
+    "socket.io-client": "^4.8.4"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^5.2.0",
+    "autoprefixer": "^10.4.20",
+    "electron": "^45.4.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.6.2",
+    "vite": "^7.3.8",
+    "vitest": "^4.1.12"
+  }
+}

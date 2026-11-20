@@ -1,0 +1,14 @@
+Package: touchcanvas
+Version: 0.1.0
+Section: graphics
+Priority: optional
+Architecture: amd64
+Depends: libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0, libgbm1, libasound2 | libasound2t64
+Installed-Size: 365674
+Maintainer: Sufyan Abdullah <touchcanvas@example.com>
+Homepage: https://example.com/touchcanvas
+Description: Cross-device digital sketching and wireframing
+ TouchCanvas turns any phone or tablet on your network into a wireless
+ drawing pad for a desktop canvas. Sketch, wireframe and present from
+ the couch or the conference table, with smart shapes, undo history,
+ and PNG/PDF/sketch-file export.

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=TouchCanvas
+Comment=Cross-device digital sketching and wireframing
+Exec=/usr/lib/touchcanvas/TouchCanvas %U
+Icon=touchcanvas
+Terminal=false
+Type=Application
+Categories=Graphics;Office;
+StartupWMClass=TouchCanvas
+Keywords=sketch;draw;wireframe;whiteboard;canvas;

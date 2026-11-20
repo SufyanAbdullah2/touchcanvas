@@ -1,0 +1,49 @@
+=== PHASE 1: installer ===
+
+> touchcanvas@0.1.0 desktop:installer
+> node scripts/desktop.js installer
+
+[36mvite v7.3.8 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 1867 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                          [39m[1m[2m  0.58 kB[22m[1m[22m[2m │ gzip:   0.36 kB[22m
+[2mdist/[22m[35massets/index-Dd0aWMkF.css           [39m[1m[2m 20.05 kB[22m[1m[22m[2m │ gzip:   5.26 kB[22m
+[2mdist/[22m[36massets/purify.es-DlXLPG5w.js        [39m[1m[2m 29.62 kB[22m[1m[22m[2m │ gzip:  11.48 kB[22m
+[2mdist/[22m[36massets/index.es-LDTdonhr.js         [39m[1m[2m158.96 kB[22m[1m[22m[2m │ gzip:  53.05 kB[22m
+[2mdist/[22m[36massets/html2canvas.esm-DXEQVQnt.js  [39m[1m[2m201.04 kB[22m[1m[22m[2m │ gzip:  47.43 kB[22m
+[2mdist/[22m[36massets/index-B4_YJpsw.js            [39m[1m[2m241.54 kB[22m[1m[22m[2m │ gzip:  78.04 kB[22m
+[2mdist/[22m[36massets/pdf-B4qkj5eH.js              [39m[1m[2m386.50 kB[22m[1m[22m[2m │ gzip: 126.56 kB[22m
+[32m✓ built in 7.00s[39m
+Packaging app for platform win32 x64 using electron v45.4.1
+Packaged TouchCanvas for win32: E:\TouchCanvas (or PocketPad) — Cross-Device Digital Sketching & Wireframing Utility\release\TouchCanvas-win32-x64
+Signed TouchCanvas.exe (UnknownError | A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider) with development certificate
+Compiling installer with NSIS 3.11...
+Processing config: E:\TouchCanvas (or PocketPad) � Cross-Device Digital Sketching & Wireframing Utility\build\nsis\nsis-3.11\nsisconf.nsh
+Processing script file: "E:\TouchCanvas (or PocketPad) � Cross-Device Digital Sketching & Wireframing Utility\build\installer.nsi" (UTF8)
+
+Processed 1 file, writing output (x86-unicode):
+
+Output: "E:\TouchCanvas (or PocketPad) � Cross-Device Digital Sketching & Wireframing Utility\release\TouchCanvas-Setup-0.1.0.exe"
+Install: 4 pages (256 bytes), 1 section (2072 bytes), 702 instructions (19656 bytes), 316 strings (8586 bytes), 1 language table (302 bytes).
+Uninstall: 2 pages (192 bytes), 1 section (2072 bytes), 58 instructions (1624 bytes), 101 strings (2786 bytes), 1 language table (250 bytes).
+Datablock optimizer saved 26498 bytes (~0.0%).
+
+Using lzma (compress whole) compression.
+
+EXE header size:              411136 / 38912 bytes
+Install code:                          (31336 bytes)
+Install data:                          (462107382 bytes)
+Uninstall code+data:                   (379912 bytes)
+Compressed data:           122145232 / 462518630 bytes
+CRC (0xD446C37A):                  4 / 4 bytes
+
+Total size:                122556372 / 462557546 bytes (26.4%)
+Installer written to E:\TouchCanvas (or PocketPad) — Cross-Device Digital Sketching & Wireframing Utility\release\TouchCanvas-Setup-0.1.0.exe
+Desktop packaging failed: Error: PowerShell exited with code 3221225794
+    at powershell (file:///E:/TouchCanvas%20(or%20PocketPad)%20%E2%80%94%20Cross-Device%20Digital%20Sketching%20&%20Wireframing%20Utility/scripts/sign.js:16:34)
+    at run (file:///E:/TouchCanvas%20(or%20PocketPad)%20%E2%80%94%20Cross-Device%20Digital%20Sketching%20&%20Wireframing%20Utility/scripts/sign.js:46:21)
+    at signFile (file:///E:/TouchCanvas%20(or%20PocketPad)%20%E2%80%94%20Cross-Device%20Digital%20Sketching%20&%20Wireframing%20Utility/scripts/sign.js:47:16)
+    at signWindowsArtifacts (file:///E:/TouchCanvas%20(or%20PocketPad)%20%E2%80%94%20Cross-Device%20Digital%20Sketching%20&%20Wireframing%20Utility/scripts/desktop.js:122:20)
+    at file:///E:/TouchCanvas%20(or%20PocketPad)%20%E2%80%94%20Cross-Device%20Digital%20Sketching%20&%20Wireframing%20Utility/scripts/desktop.js:167:7
