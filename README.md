@@ -5,6 +5,7 @@ Public project:
 - [TouchCanvas web app](https://sufyanabdullah2.github.io/touchcanvas/)
 - [Source repository](https://github.com/SufyanAbdullah2/touchcanvas)
 - [GitHub releases](https://github.com/SufyanAbdullah2/touchcanvas/releases/tag/v0.1.0)
+- [Full changelog](CHANGELOG.md)
 
 ## Deploy the pairing backend
 
