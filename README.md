@@ -1,5 +1,11 @@
 # TouchCanvas
 
+Public project:
+
+- [TouchCanvas web app](https://sufyanabdullah2.github.io/touchcanvas/)
+- [Source repository](https://github.com/SufyanAbdullah2/touchcanvas)
+- [GitHub releases](https://github.com/SufyanAbdullah2/touchcanvas/releases/tag/v0.1.0)
+
 TouchCanvas is a responsive sketching and wireframing workspace for browsers and desktop. It supports mouse, touch, and pen input, then lets a phone join the same local Wi-Fi network as a wireless drawing pad.
 
 ## Run in a browser
